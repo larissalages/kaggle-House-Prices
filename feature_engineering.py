@@ -9,10 +9,14 @@ def replace_NaN_meaning(data):
                'KitchenQual', 'SaleType', 'Functional', 'Exterior2nd', 'Exterior1st',
                'BsmtExposure','BsmtCond','BsmtQual','BsmtFinType1','BsmtFinType2',
                'MSZoning', 'Utilities']
-	# replace 'NaN' with 'None' in these columns
+    # replace 'NaN' with 'None' in these columns
 	for col in cols_fillna:
 		data[col].fillna('None',inplace=True)
 	
+	# GarageType, GarageFinish, GarageQual and GarageCond : Replacing missing data with None
+	for col in ('GarageType', 'GarageFinish', 'GarageQual', 'GarageCond'):
+		data[col] = data[col].fillna('None')
+
 	#GarageYrBlt, GarageArea and GarageCars : Replacing missing data with 0 (Since No garage = no cars in such garage.)
 	for col in ('GarageYrBlt', 'GarageArea', 'GarageCars'):
 		data[col] = data[col].fillna(0)
@@ -20,12 +24,20 @@ def replace_NaN_meaning(data):
 	#BsmtFinSF1, BsmtFinSF2, BsmtUnfSF, TotalBsmtSF, BsmtFullBath and BsmtHalfBath : missing values are likely zero for having no basement
 	for col in ('BsmtFinSF1', 'BsmtFinSF2', 'BsmtUnfSF','TotalBsmtSF', 'BsmtFullBath', 'BsmtHalfBath'):
 		data[col] = data[col].fillna(0)
+
+	# BsmtQual, BsmtCond, BsmtExposure, BsmtFinType1 and BsmtFinType2 : For all these categorical basement-related features, NaN means that there is no basement.
+	for col in ('BsmtQual', 'BsmtCond', 'BsmtExposure', 'BsmtFinType1', 'BsmtFinType2'):
+		data[col] = data[col].fillna('None')
     
 	#MasVnrArea and MasVnrType : NA most likely means no masonry veneer for these houses. We can fill 0 for the area and None for the type.
+	data["MasVnrType"] = data["MasVnrType"].fillna("None")
 	data["MasVnrArea"] = data["MasVnrArea"].fillna(0)
 
 	#Functional : data description says NA means typical
 	data["Functional"] = data["Functional"].fillna("Typ")
+
+	# MSSubClass : Na most likely means No building class. We can replace missing values with None
+	data['MSSubClass'] = data['MSSubClass'].fillna("None")
     
 	return data
 
@@ -34,7 +46,7 @@ def transform_numerical_col_categorical(data):
 	data['MSSubClass'] = data['MSSubClass'].apply(str)
 
 	#Changing OverallCond into a categorical variable
-	data['OverallCond'] = data['OverallCond'].astype(str)
+	#data['OverallCond'] = data['OverallCond'].astype(str)
 
 	#Year and month sold are transformed into categorical features.
 	#data['YrSold'] = data['YrSold'].astype(str)
@@ -73,6 +85,12 @@ def handle_missing_data(X):
 	X[categ_columns.columns] = replace_NaN_categ(X, categ_columns.columns)
 
 	return X, num_columns, categ_columns
+
+def adding_features(data):
+	# Since area related features are very important to determine house prices, add one more feature which is the total area of basement, first and second floor areas of each house
+	# Adding total sqfootage feature 
+	data['TotalSF'] = data['TotalBsmtSF'] + data['1stFlrSF'] + data['2ndFlrSF']
+	return data
 
 def split_data_dataKaggle(X, X_kaggle, one_hot_encoding_all, num_columns):
 	# Split again between the training kaggle data and test kaggle data
