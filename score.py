@@ -9,8 +9,10 @@ def mean_absolute_percentage_error(y_true, y_pred):
 
 def score(y_test,y_pred):
     #### Score using RMSE (root mean square error)
-    mse = mean_squared_error(y_test, y_pred)
-    rmse = sqrt(mse)
+    # Using log to make sure errors in predicting expensive houses and cheap houses will affect the result equally
+    rmse = np.sqrt(mean_squared_error(np.log(y_test), np.log(y_pred)))
+    #mse = mean_squared_error(y_test, y_pred)
+    #rmse = sqrt(mse)
     print("RMSE score: %f" % rmse)
     
     #### Score using MAPE (mean absolute porcentage error)
