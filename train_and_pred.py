@@ -6,6 +6,9 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.neural_network import MLPRegressor
 from sklearn.svm import SVR
+from sklearn.feature_selection import RFECV
+from sklearn.model_selection import StratifiedKFold
+from sklearn import linear_model
 
 
 def train_pred_LinearRegression(X_train, y_train, X_test, grid_search=False):
@@ -65,3 +68,47 @@ def train_pred_SVR(X_train, y_train, X_test, grid_search=False):
 		reg = grid_rf.fit(X_train, y_train)
 
 	return reg, y_pred
+
+# Recursive feature elimination with cross-validation	
+def train_pred_RFECV(X_train, y_train, X_test, grid_search=False):
+	# Create the RFE object and compute a cross-validated score.
+	rf = RandomForestRegressor()
+	# The "accuracy" scoring is proportional to the number of correct
+	# classifications
+	rfecv = RFECV(estimator=rf, step=1, cv=StratifiedKFold(2))
+	reg = rfecv.fit(X_train, y_train)
+	print("Optimal number of features : %d" % rfecv.n_features_)
+
+	return reg
+
+def train_pred_Lasso(X_train, y_train, X_test, grid_search=False):
+	if grid_search==False:
+		reg = linear_model.Lasso().fit(X_train, y_train)
+		y_pred = reg.predict(X_test)
+	else:
+		param_grid = {'alpha' : [0.01,0.1,1,10]  }
+		grid_rf = GridSearchCV(linear_model.Lasso(), param_grid, cv=10)
+		reg = grid_rf.fit(X_train, y_train)
+		y_pred = reg.predict(X_test)
+
+	return reg, y_pred
+
+def train_comb_predictor(X_train, y_train, list_alg, list_predictors):
+    dict_ = {}
+    for i in range(len(list_alg)):
+        dict_[list_alg[i]] = list_predictors[i].predict(X_train)
+
+    X_comb = pd.DataFrame(dict_)
+    reg_comb = LinearRegression().fit(X_comb, y_train)
+
+    return reg_comb
+
+def test_comb_predictor(reg_comb, list_alg, list_predictions):
+    dict_ = {}
+    for i in range(len(list_alg)):
+        dict_[list_alg[i]] = list_predictions[i]
+
+    X_comb_test = pd.DataFrame(dict_)
+    y_pred_ens = reg_comb.predict(X_comb_test)
+
+    return y_pred_ens
