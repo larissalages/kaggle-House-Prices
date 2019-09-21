@@ -9,6 +9,7 @@ from sklearn.svm import SVR
 from sklearn.feature_selection import RFECV
 from sklearn.model_selection import StratifiedKFold
 from sklearn import linear_model
+import xgboost as xgb
 
 
 def train_pred_LinearRegression(X_train, y_train, X_test, grid_search=False):
@@ -93,6 +94,13 @@ def train_pred_Lasso(X_train, y_train, X_test, grid_search=False):
 
 	return reg, y_pred
 
+def train_pred_XGboost(X_train, y_train, X_test, grid_search=False):
+
+	reg = xgb.XGBRegressor().fit(X_train, y_train)
+	y_pred = reg.predict(X_test)
+
+	return reg, y_pred	
+
 def train_comb_predictor(X_train, y_train, list_alg, list_predictors):
     dict_ = {}
     for i in range(len(list_alg)):
@@ -112,3 +120,4 @@ def test_comb_predictor(reg_comb, list_alg, list_predictions):
     y_pred_ens = reg_comb.predict(X_comb_test)
 
     return y_pred_ens
+
