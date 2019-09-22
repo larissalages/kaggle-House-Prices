@@ -30,7 +30,7 @@ def train_pred_RandomFlorest(X_train, y_train, X_test, grid_search=False):
 		y_pred = reg.predict(X_test)
 	else:
 		param_grid = {'min_samples_split' : [3,4,6,10], 'n_estimators' : [70,100] }
-		grid_rf = GridSearchCV(RandomForestRegressor(), param_grid, cv=10, n_jobs=-1)
+		grid_rf = GridSearchCV(RandomForestRegressor(), param_grid, cv=10, n_jobs=-1, scoring="neg_mean_squared_error")
 		reg = grid_rf.fit(X_train, y_train)
 		y_pred = reg.predict(X_test)
 
@@ -42,7 +42,7 @@ def train_pred_GradientBoostingRegressor(X_train, y_train, X_test, grid_search=F
 		y_pred = reg.predict(X_test)
 	else:
 		param_grid = {'loss' : ['ls', 'lad', 'huber', 'quantile'], 'learning_rate' : [0.01, 0.1, 1],'n_estimators' : [100,500, 1000]}
-		grid_rf = GridSearchCV(GradientBoostingRegressor(), param_grid, cv=10, n_jobs=-1)
+		grid_rf = GridSearchCV(GradientBoostingRegressor(), param_grid, cv=10, n_jobs=-1, scoring="neg_mean_squared_error")
 		reg = grid_rf.fit(X_train, y_train)
 		y_pred = reg.predict(X_test)
 
@@ -87,8 +87,8 @@ def train_pred_Lasso(X_train, y_train, X_test, grid_search=False):
 		reg = linear_model.Lasso().fit(X_train, y_train)
 		y_pred = reg.predict(X_test)
 	else:
-		param_grid = {'alpha' : [0.01,0.1,1,10]  }
-		grid_rf = GridSearchCV(linear_model.Lasso(), param_grid, cv=10, n_jobs=-1)
+		param_grid = {'alpha' : [0.0001,0.001,0.01,0.1,1,10]  }
+		grid_rf = GridSearchCV(linear_model.Lasso(), param_grid, cv=10, n_jobs=-1, scoring='neg_mean_squared_error')
 		reg = grid_rf.fit(X_train, y_train)
 		y_pred = reg.predict(X_test)
 
@@ -99,8 +99,8 @@ def train_pred_XGboost(X_train, y_train, X_test, grid_search=False):
 		reg = xgb.XGBRegressor().fit(X_train, y_train)
 		y_pred = reg.predict(X_test)
 	else:
-		param_grid = {'max_depth': [2,4,6], 'n_estimators': [50,100,200]}
-		grid_rf = GridSearchCV(xgb.XGBRegressor(), param_grid, cv=10, n_jobs=-1)
+		param_grid = {'max_depth': [2,4,6,7,10], 'n_estimators': [50,100,200,500]}
+		grid_rf = GridSearchCV(xgb.XGBRegressor(early_stopping_rounds=5), param_grid, cv=10, n_jobs=-1, scoring="neg_mean_squared_error")
 		reg = grid_rf.fit(X_train, y_train)
 		y_pred = reg.predict(X_test)
 

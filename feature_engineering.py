@@ -1,6 +1,19 @@
 import collections
 import pandas as pd
 
+# Remove outliers training data
+def remove_outliers(data):
+	# Remove outliers
+	data.drop(data[(data['OverallQual']<5) & (data['SalePrice']>200000)].index, inplace=True)
+	data.drop(data[(data['GrLivArea']>4500) & (data['SalePrice']<300000)].index, inplace=True)
+	data.reset_index(drop=True, inplace=True)
+
+	return data
+
+def remove_useless_features(data):
+	data = data.drop(['Utilities', 'Street', 'PoolQC'], axis=1)
+	return data
+
 #Replace values where NaN has meaning
 def replace_NaN_meaning(data):
 # columns where NaN values have meaning e.g. no pool etc.
@@ -38,6 +51,8 @@ def replace_NaN_meaning(data):
 
 	# MSSubClass : Na most likely means No building class. We can replace missing values with None
 	data['MSSubClass'] = data['MSSubClass'].fillna("None")
+
+	data['LotFrontage'] = data.groupby('Neighborhood')['LotFrontage'].transform(lambda x: x.fillna(x.median()))
     
 	return data
 
