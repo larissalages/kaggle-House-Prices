@@ -1,5 +1,17 @@
 import collections
 import pandas as pd
+from sklearn.feature_selection import VarianceThreshold 
+
+
+def feature_selection(X, X_kaggle, method, porcentage=1):
+	new_X = X
+	new_X_kaggle = X_kaggle	
+	if method == 'VarianceThreshold':
+		var = VarianceThreshold(threshold=(porcentage * (1 - porcentage)))
+		new_X = var.fit_transform(X)
+		new_X_kaggle = var.transform(X_kaggle)
+	return new_X, new_X_kaggle
+		
 
 # Remove outliers training data
 def remove_outliers(data):
