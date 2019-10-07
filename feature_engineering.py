@@ -1,17 +1,30 @@
 import collections
 import pandas as pd
 from sklearn.feature_selection import VarianceThreshold 
+from sklearn.decomposition import PCA
+from sklearn.feature_selection import SelectKBest
 
 
-def feature_selection(X, X_kaggle, method, porcentage=1):
+def feature_selection(X, X_kaggle, method, porcentage=1, n_comp=1, k =1, y = []):
 	new_X = X
 	new_X_kaggle = X_kaggle	
 	if method == 'VarianceThreshold':
 		var = VarianceThreshold(threshold=(porcentage * (1 - porcentage)))
 		new_X = var.fit_transform(X)
 		new_X_kaggle = var.transform(X_kaggle)
-	return new_X, new_X_kaggle
-		
+		return new_X, new_X_kaggle, ''
+
+	if method == 'PCA':
+		pca = PCA(n_components=n_comp, svd_solver = 'full')
+		new_X = pca.fit_transform(X)
+		new_X_kaggle = pca.transform(X_kaggle)
+		return new_X, new_X_kaggle, pca.explained_variance_ratio_
+
+	if method == 'SelectKBest':
+		kbest = SelectKBest(k)
+		new_X = kbest.fit_transform(X, y)
+		new_X_kaggle = kbest.transform(X_kaggle)
+		return new_X, new_X_kaggle, ''		
 
 # Remove outliers training data
 def remove_outliers(data):
@@ -117,6 +130,11 @@ def adding_features(data):
 	# Since area related features are very important to determine house prices, add one more feature which is the total area of basement, first and second floor areas of each house
 	# Adding total sqfootage feature 
 	data['TotalSF'] = data['TotalBsmtSF'] + data['1stFlrSF'] + data['2ndFlrSF']
+	data['hasfireplace'] = data['Fireplaces'].apply(lambda x: 1 if x > 0 else 0)
+	data['haspool'] = data['PoolArea'].apply(lambda x: 1 if x > 0 else 0)
+	data['hasgarage'] = data['GarageArea'].apply(lambda x: 1 if x > 0 else 0)
+	data['has2ndfloor'] = data['2ndFlrSF'].apply(lambda x: 1 if x > 0 else 0)
+	data['hasbsmt'] = data['TotalBsmtSF'].apply(lambda x: 1 if x > 0 else 0)
 	return data
 
 def split_data_dataKaggle(X, X_kaggle, one_hot_encoding_all, num_columns):
