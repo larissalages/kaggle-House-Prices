@@ -3,6 +3,15 @@ import pandas as pd
 from sklearn.feature_selection import VarianceThreshold 
 from sklearn.decomposition import PCA
 from sklearn.feature_selection import SelectKBest
+from sklearn.cluster import DBSCAN
+from sklearn.cluster import KMeans
+
+
+def outlier_detection(method, X):
+	if method == 'DBSCAN':
+		outlier_detection = DBSCAN(min_samples = 3, eps = 0.5)
+		clusters = outlier_detection.fit_predict(X)
+		return clusters
 
 
 def feature_selection(X, X_kaggle, method, porcentage=1, n_comp=1, k =1, y = []):
@@ -36,13 +45,13 @@ def remove_outliers(data):
 	return data
 
 def remove_useless_features(data):
-	data = data.drop(['Utilities', 'Street', 'PoolQC'], axis=1)
+	data = data.drop(['Utilities', 'Street', 'PoolQC', 'MiscFeature', 'Fence'], axis=1)
 	return data
 
 #Replace values where NaN has meaning
 def replace_NaN_meaning(data):
 # columns where NaN values have meaning e.g. no pool etc.
-	cols_fillna = ['PoolQC','MiscFeature','Alley','Fence','MasVnrType','FireplaceQu',
+	cols_fillna = ['PoolQC','Alley','Fence','MasVnrType','FireplaceQu',
                'GarageQual','GarageCond','GarageFinish','GarageType', 'Electrical',
                'KitchenQual', 'SaleType', 'Functional', 'Exterior2nd', 'Exterior1st',
                'BsmtExposure','BsmtCond','BsmtQual','BsmtFinType1','BsmtFinType2',
@@ -130,6 +139,7 @@ def adding_features(data):
 	# Since area related features are very important to determine house prices, add one more feature which is the total area of basement, first and second floor areas of each house
 	# Adding total sqfootage feature 
 	data['TotalSF'] = data['TotalBsmtSF'] + data['1stFlrSF'] + data['2ndFlrSF']
+	data['Total_Bathrooms'] = (data['FullBath'] + (0.5 * data['HalfBath']) + data['BsmtFullBath'] + (0.5 * data['BsmtHalfBath']))
 	data['hasfireplace'] = data['Fireplaces'].apply(lambda x: 1 if x > 0 else 0)
 	data['haspool'] = data['PoolArea'].apply(lambda x: 1 if x > 0 else 0)
 	data['hasgarage'] = data['GarageArea'].apply(lambda x: 1 if x > 0 else 0)
