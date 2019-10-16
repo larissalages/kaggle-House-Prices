@@ -5,7 +5,13 @@ from sklearn.decomposition import PCA
 from sklearn.feature_selection import SelectKBest
 from sklearn.cluster import DBSCAN
 from sklearn.cluster import KMeans
+from sklearn.preprocessing import LabelEncoder
 
+# drop if exists
+def drop_cols(df, del_cols):   
+    for col in (set(del_cols) & set(df.columns)):
+        df = df.drop([col], axis=1)
+    return df
 
 def outlier_detection(method, X):
 	if method == 'DBSCAN':
@@ -45,7 +51,7 @@ def remove_outliers(data):
 	return data
 
 def remove_useless_features(data):
-	data = data.drop(['Utilities', 'Street', 'PoolQC', 'MiscFeature', 'Fence'], axis=1)
+	data = data.drop(['Utilities', 'MiscFeature'], axis=1)
 	return data
 
 #Replace values where NaN has meaning
@@ -147,14 +153,30 @@ def adding_features(data):
 	data['hasbsmt'] = data['TotalBsmtSF'].apply(lambda x: 1 if x > 0 else 0)
 	return data
 
-def split_data_dataKaggle(X, X_kaggle, one_hot_encoding_all, num_columns):
+def label_enconding(X):
+	
+	cols_label = ['FireplaceQu', 'BsmtQual', 'BsmtCond', 'GarageQual', 'GarageCond', 
+			'ExterQual', 'ExterCond','HeatingQC', 'PoolQC', 'KitchenQual', 'BsmtFinType1', 
+			'BsmtFinType2', 'Functional', 'Fence', 'BsmtExposure', 'GarageFinish', 'LandSlope',
+			'LotShape', 'PavedDrive', 'Street', 'Alley', 'CentralAir', 'MSSubClass', 'OverallCond', 
+			'YrSold', 'MoSold']
+	# process columns, apply LabelEncoder to categorical features
+	for c in cols_label:
+		lbl = LabelEncoder() 
+		lbl.fit(list(X[c].values)) 
+		X[c] = lbl.transform(list(X[c].values))
+	
+	return X, cols_label
+
+
+def split_data_dataKaggle(X, X_kaggle, one_hot_encoding_all, num_columns, labelEncod_col):
 	# Split again between the training kaggle data and test kaggle data
 	one_hot_encoding = one_hot_encoding_all[:X.shape[0]]
 	one_hot_encoding_kaggle = one_hot_encoding_all[X.shape[0]:]
 
 	#Join categorical and numerical columns again
-	X_final = pd.concat([ X[num_columns.columns], one_hot_encoding], axis=1)
-	X_final_kaggle = pd.concat([ X_kaggle[num_columns.columns], one_hot_encoding_kaggle], axis=1)
+	X_final = pd.concat([ X[num_columns.columns], X[labelEncod_col], one_hot_encoding], axis=1)
+	X_final_kaggle = pd.concat([ X_kaggle[num_columns.columns], X_kaggle[labelEncod_col], one_hot_encoding_kaggle], axis=1)
 
 	return X_final.dropna(), X_final_kaggle.dropna()
 
