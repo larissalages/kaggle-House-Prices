@@ -16,6 +16,6 @@ def score(y_test,y_pred):
     print("RMSE score: %f" % rmse)
     
     #### Score using MAPE (mean absolute porcentage error)
-    ###### (MAPE is how far the model’s predictions are off from their corresponding outputs on average)
+    ###### (MAPE is how far the models predictions are off from their corresponding outputs on average)
     mape = mean_absolute_percentage_error(y_test, y_pred)
     print("MAPE score: %f" % mape)
