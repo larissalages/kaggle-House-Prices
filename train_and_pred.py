@@ -118,9 +118,14 @@ def train_pred_LightGBM(X_train, y_train, X_test, grid_search=False):
 								feature_fraction_seed=9, bagging_seed=9,
 								min_data_in_leaf =6, min_sum_hessian_in_leaf = 11).fit(X_train, y_train)
 		y_pred = reg.predict(X_test)
-		return reg, y_pred
 	else:
 		param_grid = {'max_depth': [2,4,6,7,10], 'min_data_in_leaf': [6, 10, 20], 'feature_fraction': [0.2319, 0.5, 0.7, 0.8], 'bagging_fraction': [0.8, 0.9, 0.95, 0.99]}
+		grid_rf = GridSearchCV(lgb.LGBMRegressor(objective='regression'), param_grid, cv=10, n_jobs=-1, scoring="neg_mean_squared_error")
+		reg = grid_rf.fit(X_train, y_train)
+		y_pred = reg.predict(X_test)
+
+	return reg, y_pred
+
 
 def train_comb_predictor(X_train, y_train, list_alg, list_predictors):
     dict_ = {}
